@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library>
+
+	<haxelib name="msignal" />
+
+	<duelllib name="types" />
+	<duelllib name="graphics" />
+	<duelllib name="asyncrunner" />
+	
+</library>
