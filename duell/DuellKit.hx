@@ -6,11 +6,15 @@ import graphics.Graphics;
 
 import asyncrunner.MainRunLoop;
 
+import types.Touch;
+
 class DuellKit
 {
 	/// callbacks
 	public var onUpdate(default, null) : Signal1<Float>;
 	public var onRender(default, null) : Signal0;
+	public var onTouches(default, null) : Signal1<Array<Touch>>;
+	//public var onMouseInput(default, null) : Signal1<>;
 
 	public var onMemoryWarning(default, null) : Signal0;
 
@@ -38,7 +42,6 @@ class DuellKit
 		onMemoryWarning = new Signal0();
 		onUpdate = new Signal1();
 		onRender = new Signal0();
-		//onTouch = new Signal1();
         //onClick = new Signal1();
         onScreenSizeChanged = new Signal0();
         onError = new Signal1();
@@ -70,8 +73,13 @@ class DuellKit
 		kitInstance = new DuellKit();
 
 	    Graphics.initialize(function () {
+
 	    	kitInstance.mainLoop = new MainRunLoop();
+
 	    	Graphics.instance().onRender.add(kitInstance.performRender);
+	    	kitInstance.onTouches = Graphics.instance().onTouches;
+
+
 			kitInstance.screenWidth = Graphics.instance().mainContextWidth;
 			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
 	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performScreenSizeChanged);
