@@ -8,6 +8,8 @@ import asyncrunner.MainRunLoop;
 
 import types.Touch;
 
+import haxe.Timer;
+
 class DuellKit
 {
 	/// callbacks
@@ -29,7 +31,8 @@ class DuellKit
 	public var screenHeight(default, null) : Float;
 
 	/// time
-	public var currentTime(default, null) : Float;
+	public var frameStartTime(default, null) : Float;
+	public var frameDelta(default, null) : Float;
 
 	/// assets
 	public var staticAssetList(default, null) : Array<String>;
@@ -79,10 +82,12 @@ class DuellKit
 	    	Graphics.instance().onRender.add(kitInstance.performRender);
 	    	kitInstance.onTouches = Graphics.instance().onTouches;
 
-
 			kitInstance.screenWidth = Graphics.instance().mainContextWidth;
 			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
 	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performScreenSizeChanged);
+
+			kitInstance.frameStartTime = Timer.stamp();
+			kitInstance.frameDelta = 0;
 
 	    	finishedCallback();
 	    });
@@ -98,8 +103,12 @@ class DuellKit
 
 	private function performRender()
 	{
+		var newCurrentTime = Timer.stamp();
+		frameDelta = newCurrentTime - frameStartTime;
+		frameStartTime = newCurrentTime;
+
     	Graphics.instance().clearAllBuffers();
-		kitInstance.onRender.dispatch();
+		onRender.dispatch();
 		Graphics.instance().present();	
 	}
 
