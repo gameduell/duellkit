@@ -7,6 +7,8 @@ import graphics.Graphics;
 import asyncrunner.MainRunLoop;
 
 import types.Touch;
+import types.Vector2;
+import types.Mouse;
 
 import haxe.Timer;
 
@@ -16,12 +18,12 @@ class DuellKit
 	public var onUpdate(default, null) : Signal1<Float>;
 	public var onRender(default, null) : Signal0;
 	public var onTouches(default, null) : Signal1<Array<Touch>>;
-	//public var onMouseInput(default, null) : Signal1<>;
+	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEvent>;
+	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEvent>;
+	public var mouseState(default, null) : Map<MouseButton, MouseButtonState>;
+	public var mousePosition(default, null) : Vector2;
 
 	public var onMemoryWarning(default, null) : Signal0;
-
-	//public var onTouch(default, null) : Signal1<Touch>;
-    //public var onClick(default, null) : Signal1<Mouse>;
 
     public var onError(default, null) : Signal1<Dynamic>;
 
@@ -45,7 +47,6 @@ class DuellKit
 		onMemoryWarning = new Signal0();
 		onUpdate = new Signal1();
 		onRender = new Signal0();
-        //onClick = new Signal1();
         onScreenSizeChanged = new Signal0();
         onError = new Signal1();
 
