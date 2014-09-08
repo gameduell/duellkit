@@ -8,7 +8,11 @@ import asyncrunner.MainRunLoop;
 
 import types.Touch;
 import types.Vector2;
-import types.Mouse;
+import types.MouseEvent;
+
+#if (html5 || flash)
+import input.MouseManager;
+#end
 
 import haxe.Timer;
 
@@ -18,10 +22,11 @@ class DuellKit
 	public var onUpdate(default, null) : Signal1<Float>;
 	public var onRender(default, null) : Signal0;
 	public var onTouches(default, null) : Signal1<Array<Touch>>;
+
 	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEvent>;
 	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEvent>;
 	public var mouseState(default, null) : Map<MouseButton, MouseButtonState>;
-	public var mousePosition(default, null) : Vector2;
+	public var mouseScreenPosition(default, null) : Vector2;
 
 	public var onMemoryWarning(default, null) : Signal0;
 
@@ -90,7 +95,21 @@ class DuellKit
 			kitInstance.frameStartTime = Timer.stamp();
 			kitInstance.frameDelta = 0;
 
-	    	finishedCallback();
+
+#if (html5 || flash)
+			MouseManager.initialize(function () {
+
+
+				kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
+				kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
+	    		finishedCallback();
+			});
+#else
+			kitInstance.onMouseMovementEvent = new Signal1();
+			kitInstance.onMouseButtonEvent = new Signal1();
+			finishedCallback();
+#end
+
 	    });
 	}
 

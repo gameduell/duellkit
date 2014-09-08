@@ -6,5 +6,6 @@
 	<duelllib name="types" />
 	<duelllib name="graphics" />
 	<duelllib name="asyncrunner" />
+	<duelllib name="input" />
 	
 </library>
