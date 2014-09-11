@@ -30,7 +30,7 @@ class DuellKit
 	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEvent>;
 	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEvent>;
 	public var mouseState(default, null) : Map<MouseButton, MouseButtonState>;
-	public var mousePosition(default, null) : Vector2;
+	public var mousePosition(get, null) : Vector2;
 
 	public var onMemoryWarning(default, null) : Signal0;
 
@@ -128,16 +128,12 @@ class DuellKit
 			});
 		#else
 			MouseManager.initialize(function () {
-
 				kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
 				kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
 
 				TouchManager.initialize(function () {
-
-
 					kitInstance.onTouches = TouchManager.instance().onTouches;
 	    			after();
-
 				});
 			});
 		#end
@@ -165,6 +161,11 @@ class DuellKit
 	public function loopMainLoop(time : Float) : Void
 	{
 		mainLoop.loopMainLoop(time);
+	}
+	public function get_mousePosition() : Vector2
+	{
+	    mousePosition = MouseManager.instance().getMainMouse().screenPosition;
+	    return mousePosition;
 	}
 
 	public function exit() : Void
