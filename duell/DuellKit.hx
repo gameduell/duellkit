@@ -162,11 +162,16 @@ class DuellKit
 	{
 		mainLoop.loopMainLoop(time);
 	}
+
 	public function get_mousePosition() : Vector2
 	{
+#if (html5 || flash)
 	    mousePosition = MouseManager.instance().getMainMouse().screenPosition;
 	    return mousePosition;
-	}
+#else
+        return null;
+#end
+    }
 
 	public function exit() : Void
 	{
