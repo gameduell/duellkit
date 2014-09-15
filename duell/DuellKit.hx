@@ -8,15 +8,16 @@ import asyncrunner.MainRunLoop;
 
 import filesystem.FileSystem;
 
-import types.Touch;
 import types.Vector2;
-import types.MouseEvent;
+
+import input.Touch;
+import input.MouseEventData;
 
 #if (html5 || flash)
 import input.MouseManager;
 #end
 
-#if (!flash)
+#if (ios || android || html5)
 import input.TouchManager;
 #end
 
@@ -29,8 +30,8 @@ class DuellKit
 	public var onRender(default, null) : Signal0;
 	public var onTouches(default, null) : Signal1<Array<Touch>>;
 
-	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEvent>;
-	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEvent>;
+	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEventData>;
+	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEventData>;
 	public var mouseState(default, null) : Map<MouseButton, MouseButtonState>;
 	public var mousePosition(get, null) : Vector2;
 
@@ -176,10 +177,10 @@ class DuellKit
 	public function get_mousePosition() : Vector2
 	{
 		#if (html5 || flash)
-			    mousePosition = MouseManager.instance().getMainMouse().screenPosition;
-			    return mousePosition;
+			mousePosition = MouseManager.instance().getMainMouse().screenPosition;
+			return mousePosition;
 		#else
-		        return null;
+		    return null;
 		#end
     }
 
