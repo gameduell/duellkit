@@ -26,7 +26,6 @@ import haxe.Timer;
 class DuellKit
 {
 	/// callbacks
-	public var onUpdate(default, null) : Signal1<Float>;
 	public var onRender(default, null) : Signal0;
 	public var onTouches(default, null) : Signal1<Array<Touch>>;
 
@@ -57,7 +56,6 @@ class DuellKit
 	private function new() : Void 
 	{
 		onMemoryWarning = new Signal0();
-		onUpdate = new Signal1();
 		onRender = new Signal0();
         onScreenSizeChanged = new Signal0();
         onError = new Signal1();
