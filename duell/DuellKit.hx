@@ -6,6 +6,8 @@ import graphics.Graphics;
 
 import asyncrunner.MainRunLoop;
 
+import filesystem.FileSystem;
+
 import types.Touch;
 import types.Vector2;
 import types.MouseEvent;
@@ -81,8 +83,12 @@ class DuellKit
 		return kitInstance;
 	}
 
+
+    public static var callbackAfterInitializing : Void -> Void;
 	public static function initialize(finishedCallback : Void -> Void) : Void
 	{
+        callbackAfterInitializing = finishedCallback;
+
 		kitInstance = new DuellKit();
 
 		/// TODO REFACTOR WITH TASKS
@@ -99,45 +105,49 @@ class DuellKit
 			kitInstance.frameStartTime = Timer.stamp();
 			kitInstance.frameDelta = 0;
 
-			afterGraphics(finishedCallback);
-
+			initFileSystem(afterFileSystem);
 	    });
 	}
 
-	private static function afterGraphics(after : Void->Void)
-	{
-		#if (flash)
-			MouseManager.initialize(function () {
+    private static function initFileSystem(after : Void->Void)
+    {
+        FileSystem.initialize(after);
+    }
 
-				kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
-				kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
+    private static function afterFileSystem()
+    {
+        #if (flash)
+                    MouseManager.initialize(function () {
 
-				kitInstance.onTouches = new Signal1();
+                        kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
+                        kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
 
-	    		after();
-			});
-		#elseif (ios || android)
-			TouchManager.initialize(function () {
+                        kitInstance.onTouches = new Signal1();
 
-				kitInstance.onMouseMovementEvent = new Signal1();
-				kitInstance.onMouseButtonEvent = new Signal1();
+                        callbackAfterInitializing();
+                    });
+                #elseif (ios || android)
+                    TouchManager.initialize(function () {
 
-				kitInstance.onTouches = TouchManager.instance().onTouches;
+                        kitInstance.onMouseMovementEvent = new Signal1();
+                        kitInstance.onMouseButtonEvent = new Signal1();
 
-				after();
-			});
-		#else
-			MouseManager.initialize(function () {
-				kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
-				kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
+                        kitInstance.onTouches = TouchManager.instance().onTouches;
 
-				TouchManager.initialize(function () {
-					kitInstance.onTouches = TouchManager.instance().onTouches;
-	    			after();
-				});
-			});
-		#end
-	}
+                        callbackAfterInitializing();
+                    });
+                #else
+                MouseManager.initialize(function () {
+                    kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
+                    kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
+
+                    TouchManager.initialize(function () {
+                        kitInstance.onTouches = TouchManager.instance().onTouches;
+                        callbackAfterInitializing();
+                    });
+                });
+        #end
+    }
 
 	private function performScreenSizeChanged()
 	{

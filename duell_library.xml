@@ -7,5 +7,6 @@
 	<duelllib name="graphics" />
 	<duelllib name="asyncrunner" />
 	<duelllib name="input" />
+    <duelllib name="filesystem" />
 	
 </library>
