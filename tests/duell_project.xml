@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<app title="Empty Project" package="com.gameduell.tests" version="0.0.1" company="GameDuell GmbH" />
+
+	<main name="Main" />
+
+	<source path="source" />
+
+	<duelllib name="duellkit" />
+
+</project>

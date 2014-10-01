@@ -4,9 +4,14 @@ import msignal.Signal;
 
 import graphics.Graphics;
 
+import asyncrunner.Task;
+import asyncrunner.RunLoop;
 import asyncrunner.MainRunLoop;
+import asyncrunner.FunctionTask;
+import asyncrunner.SequentialTaskGroup;
 
 import filesystem.FileSystem;
+import filesystem.StaticAssetList;
 
 import types.Vector2;
 
@@ -26,19 +31,19 @@ import haxe.Timer;
 class DuellKit
 {
 	/// callbacks
-	public var onRender(default, null) : Signal0;
-	public var onTouches(default, null) : Signal1<Array<Touch>>;
+	public var onRender(default, null) : Signal0 = new Signal0();
+	public var onTouches(default, null) : Signal1<Array<Touch>> = new Signal1();
 
-	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEventData>;
-	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEventData>;
-	public var mouseState(default, null) : Map<MouseButton, MouseButtonState>;
+	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEventData> = new Signal1();
+	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEventData> = new Signal1();
+	public var mouseState(get, null) : Map<MouseButton, MouseButtonState>;
 	public var mousePosition(get, null) : Vector2;
 
-	public var onMemoryWarning(default, null) : Signal0;
+	//public var onMemoryWarning(default, null) : Signal0 = new Signal0();
 
-    public var onError(default, null) : Signal1<Dynamic>;
+    public var onError(default, null) : Signal1<Dynamic> = new Signal1();
 
-    public var onScreenSizeChanged(default, null) : Signal0;
+    public var onScreenSizeChanged(default, null) : Signal0 = new Signal0();
 
 	public var screenWidth(default, null) : Float;
 	public var screenHeight(default, null) : Float;
@@ -48,32 +53,19 @@ class DuellKit
 	public var frameDelta(default, null) : Float;
 
 	/// assets
-	public var staticAssetList(default, null) : Array<String>;
+	public var staticAssetList(default, null) : Array<String> = StaticAssetList.list;
 
 	static private var kitInstance : DuellKit;
-	private var mainLoop : MainRunLoop;
+	private var mainLoop : MainRunLoop = RunLoop.getMainLoop();
 
 	private function new() : Void 
 	{
-		onMemoryWarning = new Signal0();
-		onRender = new Signal0();
-        onScreenSizeChanged = new Signal0();
-        onError = new Signal1();
-
         onError.add(function (e) {
 
 	        if(onError.numListeners == 1) /// only this
 	            throw e;
 
         });
-
-		//#if ios
-		//IOSAppDelegate.instance().onMemoryWarning.add(dispatchMemoryWarning);
-		//#end
-
-		//#if android
-		//AndroidAppDelegate.instance().onLowMemory.add(dispatchMemoryWarning);
-		//#end
     }
 
 
@@ -93,99 +85,158 @@ class DuellKit
 		/// TODO REFACTOR WITH TASKS
 	    Graphics.initialize(function () {
 
-	    	kitInstance.mainLoop = new MainRunLoop();
-
-	    	Graphics.instance().onRender.add(kitInstance.performRender);
-
 			kitInstance.screenWidth = Graphics.instance().mainContextWidth;
 			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
-	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performScreenSizeChanged);
+	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performOnScreenSizeChanged);
 
 			kitInstance.frameStartTime = Timer.stamp();
 			kitInstance.frameDelta = 0;
+	    	Graphics.instance().onRender.add(kitInstance.performOnRender);
 
-			initFileSystem(afterFileSystem);
+	    	kitInstance.initTheOtherSystems();
 	    });
 	}
 
-    private static function initFileSystem(after : Void->Void)
-    {
-        FileSystem.initialize(after);
-    }
-
-    private static function afterFileSystem()
-    {
-        #if (flash)
-                    MouseManager.initialize(function () {
-
-                        kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
-                        kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
-
-                        kitInstance.onTouches = new Signal1();
-
-                        callbackAfterInitializing();
-                    });
-                #elseif (ios || android)
-                    TouchManager.initialize(function () {
-
-                        kitInstance.onMouseMovementEvent = new Signal1();
-                        kitInstance.onMouseButtonEvent = new Signal1();
-
-                        kitInstance.onTouches = TouchManager.instance().onTouches;
-
-                        callbackAfterInitializing();
-                    });
-                #else
-                MouseManager.initialize(function () {
-                    kitInstance.onMouseMovementEvent = MouseManager.instance().getMainMouse().onMovementEvent;
-                    kitInstance.onMouseButtonEvent = MouseManager.instance().getMainMouse().onButtonEvent;
-
-                    TouchManager.initialize(function () {
-                        kitInstance.onTouches = TouchManager.instance().onTouches;
-                        callbackAfterInitializing();
-                    });
-                });
-        #end
-    }
-
-	private function performScreenSizeChanged()
+	private function initTheOtherSystems()
 	{
-		screenWidth = Graphics.instance().mainContextWidth;
-		screenHeight = Graphics.instance().mainContextHeight;
+		var taskArray : Array<Task> = [];
 
-		onScreenSizeChanged.dispatch();
+		/// FILESYSTEM
+		var filesystemTask : FunctionTask = null;
+		filesystemTask = new FunctionTask(function() FileSystem.initialize(filesystemTask.finishExecution), false);
+
+		/// PUSH FILESYSTEM
+		taskArray.push(filesystemTask);
+
+		/// MOUSE
+		#if (flash || html5) 
+
+		var mouseTask : FunctionTask = null;
+		mouseTask = new FunctionTask(function() MouseManager.initialize(mouseTask.finishExecution);, false);
+
+		var postMousetask = new FunctionTask(function() {
+			MouseManager.instance().getMainMouse().onMovementEvent.add(performOnMouseMovementEvent);
+			MouseManager.instance().getMainMouse().onButtonEvent.add(performOnMouseButtonEvent);
+		});
+
+		/// PUSH MOUSE
+		taskArray.push(mouseTask);
+		taskArray.push(postMousetask);
+
+		#end /// mouse
+
+		/// TOUCH
+		#if (html5 || ios || android)
+
+		var touchTask : FunctionTask = null;
+		touchTask = new FunctionTask(function() TouchManager.initialize(touchTask.finishExecution), false);
+
+		var postTouchtask = new FunctionTask(function() {
+			TouchManager.instance().onTouches.add(performOnTouches);
+		});
+
+		/// PUSH TOUCH
+		taskArray.push(touchTask);
+		taskArray.push(postTouchtask);
+
+		#end /// touch
+
+		/// finalize with calling the duell kit finished initializing
+		taskArray.push(new FunctionTask(callbackAfterInitializing));
+
+		new SequentialTaskGroup(taskArray).execute();
 	}
 
-	private function performRender()
+	private function performOnScreenSizeChanged()
 	{
-		var newCurrentTime = Timer.stamp();
-		frameDelta = newCurrentTime - frameStartTime;
-		frameStartTime = newCurrentTime;
+		try
+		{
+			screenWidth = Graphics.instance().mainContextWidth;
+			screenHeight = Graphics.instance().mainContextHeight;
 
-    	Graphics.instance().clearAllBuffers();
-		onRender.dispatch();
-		Graphics.instance().present();	
+			onScreenSizeChanged.dispatch();
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
 	}
 
-	public function loopMainLoop(time : Float) : Void
+	private function performOnRender()
 	{
-		mainLoop.loopMainLoop(time);
+		try
+		{
+			var newCurrentTime = Timer.stamp();
+			frameDelta = newCurrentTime - frameStartTime;
+			frameStartTime = newCurrentTime;
+
+	    	Graphics.instance().clearAllBuffers();
+			onRender.dispatch();
+			Graphics.instance().present();	
+
+			mainLoop.loopMainLoop();
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
+	}
+
+	private function performOnMouseMovementEvent(event : MouseMovementEventData)
+	{
+		try
+		{
+			onMouseMovementEvent.dispatch(event);
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
+	}
+
+	private function performOnMouseButtonEvent(event : MouseButtonEventData)
+	{
+		try
+		{
+			onMouseButtonEvent.dispatch(event);
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
+	}
+
+	private function performOnTouches(touches : Array<Touch>)
+	{
+		try
+		{
+			onTouches.dispatch(touches);
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
+
 	}
 
 	public function get_mousePosition() : Vector2
 	{
 		#if (html5 || flash)
-			mousePosition = MouseManager.instance().getMainMouse().screenPosition;
-			return mousePosition;
+			return MouseManager.instance().getMainMouse().screenPosition;
 		#else
 		    return null;
 		#end
     }
 
-	public function exit() : Void
-	{
 
-	}
+	public function get_mouseState() : Map<MouseButton, MouseButtonState>
+	{
+		#if (html5 || flash)
+			return MouseManager.instance().getMainMouse().state;
+		#else
+		    return null;
+		#end
+    }
 }
 
 
