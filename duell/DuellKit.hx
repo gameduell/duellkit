@@ -112,7 +112,7 @@ class DuellKit
 		#if (flash || html5) 
 
 		var mouseTask : FunctionTask = null;
-		mouseTask = new FunctionTask(function() MouseManager.initialize(mouseTask.finishExecution);, false);
+		mouseTask = new FunctionTask(function() MouseManager.initialize(mouseTask.finishExecution), false);
 
 		var postMousetask = new FunctionTask(function() {
 			MouseManager.instance().getMainMouse().onMovementEvent.add(performOnMouseMovementEvent);
