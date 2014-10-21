@@ -3,10 +3,10 @@
 
 	<haxelib name="msignal" />
 
-	<duelllib name="types" />
-	<duelllib name="graphics" />
-	<duelllib name="asyncrunner" />
-	<duelllib name="input" />
-    <duelllib name="filesystem" />
+	<duelllib name="types" version="1.*.*" />
+	<duelllib name="graphics" version="1.*.*" />
+	<duelllib name="asyncrunner" version="1.*.*" />
+	<duelllib name="input" version="1.*.*" />
+    <duelllib name="filesystem" version="1.*.*" />
 	
 </library>
