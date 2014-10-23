@@ -30,7 +30,12 @@ import haxe.Timer;
 
 class DuellKit
 {
-	/// callbacks
+     ///static
+    #if flash
+        static var tf : flash.text.TextField = null;
+    #end
+
+    /// callbacks
 	public var onRender(default, null) : Signal0 = new Signal0();
 	public var onTouches(default, null) : Signal1<Array<Touch>> = new Signal1();
 
@@ -81,6 +86,8 @@ class DuellKit
         callbackAfterInitializing = finishedCallback;
 
 		kitInstance = new DuellKit();
+        ///Override trace
+        trace = print;
 
 		/// TODO REFACTOR WITH TASKS
 	    Graphics.initialize(function () {
@@ -96,7 +103,41 @@ class DuellKit
 	    	kitInstance.initTheOtherSystems();
 	    });
 	}
+    static public dynamic function print(v: Dynamic,  ?pos: haxe.PosInfos = null) untyped
+    {
+        #if flash
+            tf = flash.Boot.getTrace();
+			var s = flash.Boot.__string_rec(v,"");
+			tf.text +=s;
+		#elseif neko
+			__dollar__print(v);
+		#elseif php
+			php.Lib.print(v);
+		#elseif cpp
+			cpp.Lib.print(v);
+		#elseif js
+			var msg = js.Boot.__string_rec(v,"");
+			var d;
+            if( __js__("typeof")(document) != "undefined"
+                    && (d = document.getElementById("haxe:trace")) != null ) {
+                msg = msg.split("\n").join("<br/>");
+                d.innerHTML += StringTools.htmlEscape(msg)+"<br/>";
+            }
+			else if (  __js__("typeof process") != "undefined"
+					&& __js__("process").stdout != null
+					&& __js__("process").stdout.write != null)
+				__js__("process").stdout.write(msg); // node
+			else if (  __js__("typeof console") != "undefined"
+					&& __js__("console").log != null )
+				__js__("console").log(msg); // document-less js (which may include a line break)
 
+		#elseif cs
+			cs.system.Console.Write(v);
+		#elseif java
+			var str:String = v;
+			untyped __java__("java.lang.System.out.print(str)");
+		#end
+    }
 	private function initTheOtherSystems()
 	{
 		var taskArray : Array<Task> = [];
