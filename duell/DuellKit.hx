@@ -28,34 +28,36 @@ import input.TouchManager;
 
 import haxe.Timer;
 
+@:access(duell.DuellTimer)
 class DuellKit
 {
-     ///static
-    #if flash
-        static var tf : flash.text.TextField = null;
-    #end
-
     /// callbacks
-	public var onRender(default, null) : Signal0 = new Signal0();
-	public var onTouches(default, null) : Signal1<Array<Touch>> = new Signal1();
+    public var onEnterFrame(default, null): Signal0 = new Signal0();
+    public var onRender(default, null): Signal0 = new Signal0();
+    public var onExitFrame(default, null): Signal0 = new Signal0();
 
-	public var onMouseButtonEvent(default, null) : Signal1<MouseButtonEventData> = new Signal1();
-	public var onMouseMovementEvent(default, null) : Signal1<MouseMovementEventData> = new Signal1();
-	public var mouseState(get, null) : Map<MouseButton, MouseButtonState>;
-	public var mousePosition(get, null) : Vector2;
+	public var onTouches(default, null): Signal1<Array<Touch>> = new Signal1();
 
-	//public var onMemoryWarning(default, null) : Signal0 = new Signal0();
+	public var onMouseButtonEvent(default, null): Signal1<MouseButtonEventData> = new Signal1();
+	public var onMouseMovementEvent(default, null): Signal1<MouseMovementEventData> = new Signal1();
+	public var mouseState(get, null): Map<MouseButton, MouseButtonState>;
+	public var mousePosition(get, null): Vector2;
 
-    public var onError(default, null) : Signal1<Dynamic> = new Signal1();
+	//public var onMemoryWarning(default, null): Signal0 = new Signal0();
 
-    public var onScreenSizeChanged(default, null) : Signal0 = new Signal0();
+    public var onError(default, null): Signal1<Dynamic> = new Signal1();
 
-	public var screenWidth(default, null) : Float;
-	public var screenHeight(default, null) : Float;
+    public var onScreenSizeChanged(default, null): Signal0 = new Signal0();
+
+	public var screenWidth(default, null): Float;
+	public var screenHeight(default, null): Float;
 
 	/// time
-	public var frameStartTime(default, null) : Float;
-	public var frameDelta(default, null) : Float;
+    public var mainTimer(default, null): DuellTimer;
+    public var frameDelta(default, null): Float;
+	public var frameStartTime(default, null): Float;
+    inline static private var frameDeltaMax: Float = 1.0/15.0;
+    inline static private var frameDeltaMin: Float = 1.0/60.0;
 
 	/// assets
 	public var staticAssetList(default, null) : Array<String> = StaticAssetList.list;
@@ -63,8 +65,10 @@ class DuellKit
 	static private var kitInstance : DuellKit;
 	private var mainLoop : MainRunLoop = RunLoop.getMainLoop();
 
-	private function new() : Void 
+	private function new(): Void
 	{
+        mainTimer = new DuellTimer(1);
+
         onError.add(function (e) {
 
 	        if(onError.numListeners == 1) /// only this
@@ -73,20 +77,18 @@ class DuellKit
         });
     }
 
-
-	static public inline function instance() : DuellKit
+	static public inline function instance(): DuellKit
 	{
 		return kitInstance;
 	}
 
 
-    public static var callbackAfterInitializing : Void -> Void;
-	public static function initialize(finishedCallback : Void -> Void) : Void
+    public static var callbackAfterInitializing: Void -> Void;
+	public static function initialize(finishedCallback: Void -> Void): Void
 	{
         callbackAfterInitializing = finishedCallback;
 
 		kitInstance = new DuellKit();
-        ///Override trace
 
 		/// TODO REFACTOR WITH TASKS
 	    Graphics.initialize(function () {
@@ -95,8 +97,8 @@ class DuellKit
 			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
 	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performOnScreenSizeChanged);
 
+            kitInstance.frameDelta = 0.0;
 			kitInstance.frameStartTime = Timer.stamp();
-			kitInstance.frameDelta = 0;
 	    	Graphics.instance().onRender.add(kitInstance.performOnRender);
 
 	    	kitInstance.initTheOtherSystems();
@@ -137,7 +139,7 @@ class DuellKit
 			untyped __java__("java.lang.System.out.print(str)");
 		#end
     }
-	private function initTheOtherSystems()
+	private function initTheOtherSystems(): Void
 	{
 		var taskArray : Array<Task> = [];
 
@@ -187,7 +189,7 @@ class DuellKit
 		new SequentialTaskGroup(taskArray).execute();
 	}
 
-	private function performOnScreenSizeChanged()
+	private function performOnScreenSizeChanged(): Void
 	{
 		try
 		{
@@ -202,19 +204,28 @@ class DuellKit
 		}
 	}
 
-	private function performOnRender()
+    // Display Sync
+	private function performOnRender(): Void
 	{
 		try
 		{
-			var newCurrentTime = Timer.stamp();
-			frameDelta = newCurrentTime - frameStartTime;
-			frameStartTime = newCurrentTime;
+            calculateDeltaTime();
 
-	    	Graphics.instance().clearAllBuffers();
+            // Input Processing in here
+            onEnterFrame.dispatch();
+
+            // Tick main timer for update
+            mainTimer.tick(frameDelta);
+
+            // Rendering
+            Graphics.instance().clearAllBuffers();
 			onRender.dispatch();
-			Graphics.instance().present();	
+			Graphics.instance().present();
 
-			mainLoop.loopMainLoop();
+            onExitFrame.dispatch();
+
+            // Mainloop
+            mainLoop.loopMainLoop();
 		}
 		catch(e : Dynamic)
 		{
@@ -222,7 +233,17 @@ class DuellKit
 		}
 	}
 
-	private function performOnMouseMovementEvent(event : MouseMovementEventData)
+    private function calculateDeltaTime(): Void
+    {
+        var newCurrentTime = Timer.stamp();
+        frameDelta = newCurrentTime - frameStartTime;
+        frameStartTime = newCurrentTime;
+
+        frameDelta = Math.min(frameDelta, frameDeltaMax);
+        frameDelta = Math.max(frameDelta, frameDeltaMin);
+    }
+
+	private function performOnMouseMovementEvent(event: MouseMovementEventData): Void
 	{
 		try
 		{
@@ -234,7 +255,7 @@ class DuellKit
 		}
 	}
 
-	private function performOnMouseButtonEvent(event : MouseButtonEventData)
+	private function performOnMouseButtonEvent(event: MouseButtonEventData): Void
 	{
 		try
 		{
@@ -246,7 +267,7 @@ class DuellKit
 		}
 	}
 
-	private function performOnTouches(touches : Array<Touch>)
+	private function performOnTouches(touches: Array<Touch>): Void
 	{
 		try
 		{
@@ -259,7 +280,7 @@ class DuellKit
 
 	}
 
-	public function get_mousePosition() : Vector2
+	public function get_mousePosition(): Vector2
 	{
 		#if (html5 || flash)
 			return MouseManager.instance().getMainMouse().screenPosition;
@@ -269,7 +290,7 @@ class DuellKit
     }
 
 
-	public function get_mouseState() : Map<MouseButton, MouseButtonState>
+	public function get_mouseState(): Map<MouseButton, MouseButtonState>
 	{
 		#if (html5 || flash)
 			return MouseManager.instance().getMainMouse().state;
