@@ -31,6 +31,11 @@ import haxe.Timer;
 @:access(duell.DuellTimer)
 class DuellKit
 {
+     ///static
+    #if flash
+        static var tf : flash.text.TextField = null;
+    #end
+
     /// callbacks
     public var onEnterFrame(default, null): Signal0 = new Signal0();
     public var onRender(default, null): Signal0 = new Signal0();
