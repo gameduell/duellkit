@@ -87,7 +87,6 @@ class DuellKit
 
 		kitInstance = new DuellKit();
         ///Override trace
-        trace = print;
 
 		/// TODO REFACTOR WITH TASKS
 	    Graphics.initialize(function () {
