@@ -13,11 +13,11 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="msignal" level="project" />
-    <orderEntry type="library" name="types" level="project" />
-    <orderEntry type="library" name="graphics" level="project" />
     <orderEntry type="library" name="asyncrunner" level="project" />
-    <orderEntry type="library" name="input" level="project" />
-    <orderEntry type="library" name="filesystem" level="project" />
+    <orderEntry type="module" module-name="types" />
+    <orderEntry type="module" module-name="graphics" />
+    <orderEntry type="module" module-name="filesystem" />
+    <orderEntry type="module" module-name="input" />
   </component>
 </module>
 
