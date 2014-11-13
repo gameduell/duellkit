@@ -16,7 +16,10 @@ import filesystem.StaticAssetList;
 import types.Vector2;
 
 import input.Touch;
-import input.MouseEventData;
+import input.MouseButton;
+import input.MouseButtonState;
+import input.MouseButtonEventData;
+import input.MouseMovementEventData;
 
 #if (html5 || flash)
 import input.MouseManager;
