@@ -4,11 +4,8 @@ import msignal.Signal;
 
 import graphics.Graphics;
 
-import asyncrunner.Task;
-import asyncrunner.RunLoop;
-import asyncrunner.MainRunLoop;
-import asyncrunner.FunctionTask;
-import asyncrunner.SequentialTaskGroup;
+import runloop.RunLoop;
+import runloop.MainRunLoop;
 
 import filesystem.FileSystem;
 import filesystem.StaticAssetList;
@@ -147,54 +144,52 @@ class DuellKit
 			untyped __java__("java.lang.System.out.print(str)");
 		#end
     }
+
 	private function initTheOtherSystems(): Void
 	{
-		var taskArray : Array<Task> = [];
+		var taskArray : Array<Void->Void> = [];
+
+		var runAnotherInit = function()
+		{
+			if (taskArray.length > 0)
+			{
+				RunLoop.getMainLoop().queue(taskArray.shift(), PriorityASAP);
+			}
+		}
 
 		/// FILESYSTEM
-		var filesystemTask : FunctionTask = null;
-		filesystemTask = new FunctionTask(function() FileSystem.initialize(filesystemTask.finishExecution), false);
-
-		/// PUSH FILESYSTEM
-		taskArray.push(filesystemTask);
+		taskArray.push(function() FileSystem.initialize(runAnotherInit));
 
 		/// MOUSE
 		#if (flash || html5) 
 
-		var mouseTask : FunctionTask = null;
-		mouseTask = new FunctionTask(function() MouseManager.initialize(mouseTask.finishExecution), false);
+		taskArray.push(function() MouseManager.initialize(runAnotherInit));
 
-		var postMousetask = new FunctionTask(function() {
+		taskArray.push(function() {
 			MouseManager.instance().getMainMouse().onMovementEvent.add(performOnMouseMovementEvent);
 			MouseManager.instance().getMainMouse().onButtonEvent.add(performOnMouseButtonEvent);
+			runAnotherInit();
 		});
-
-		/// PUSH MOUSE
-		taskArray.push(mouseTask);
-		taskArray.push(postMousetask);
 
 		#end /// mouse
 
 		/// TOUCH
 		#if (html5 || ios || android)
 
-		var touchTask : FunctionTask = null;
-		touchTask = new FunctionTask(function() TouchManager.initialize(touchTask.finishExecution), false);
+		taskArray.push(function() TouchManager.initialize(runAnotherInit));
 
-		var postTouchtask = new FunctionTask(function() {
+		taskArray.push(function() {
 			TouchManager.instance().onTouches.add(performOnTouches);
+			runAnotherInit();
 		});
-
-		/// PUSH TOUCH
-		taskArray.push(touchTask);
-		taskArray.push(postTouchtask);
 
 		#end /// touch
 
 		/// finalize with calling the duell kit finished initializing
-		taskArray.push(new FunctionTask(callbackAfterInitializing));
+		taskArray.push(callbackAfterInitializing);
 
-		new SequentialTaskGroup(taskArray).execute();
+		/// just runs the first one
+		runAnotherInit();
 	}
 
 	private function performOnScreenSizeChanged(): Void
