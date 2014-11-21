@@ -1,11 +1,11 @@
 package duell;
 
 import haxe.Timer;
-import msignal.Signal.Signal0;
+import msignal.Signal.Signal1;
 
 class DuellTimer
 {
-    public var onFire(default, null): Signal0;
+    public var onFire(default, null): Signal1<Float>;
     public var paused(default, null): Bool = false;
 
     public var timeScale: Float = 1.0;
@@ -22,7 +22,7 @@ class DuellTimer
     public function new(?tickDivider = 1): Void
     {
         set_tickDivider(tickDivider);
-        onFire = new Signal0();
+        onFire = new Signal1();
     }
 
     private function set_tickDivider(value: Int): Int
@@ -65,7 +65,7 @@ class DuellTimer
 
             currentTime += relFrameDelta;
 
-            onFire.dispatch();
+            onFire.dispatch(relFrameDelta);
         }
     }
 
@@ -79,7 +79,7 @@ class DuellTimer
 
         relFrameDelta = absoluteDeltaTime * timeScale;
         currentTime += relFrameDelta;
-        onFire.dispatch();
+        onFire.dispatch(relFrameDelta);
     }
 
     public function stop(): Void
@@ -100,5 +100,4 @@ class DuellTimer
     {
         currentTime = 0.0;
     }
-
 }
