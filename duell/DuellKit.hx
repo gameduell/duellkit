@@ -6,6 +6,7 @@ import graphics.Graphics;
 
 import runloop.RunLoop;
 import runloop.MainRunLoop;
+import runloop.Timer;
 
 import filesystem.FileSystem;
 import filesystem.StaticAssetList;
@@ -26,9 +27,6 @@ import input.MouseManager;
 import input.TouchManager;
 #end
 
-import haxe.Timer;
-
-@:access(duell.DuellTimer)
 class DuellKit
 {
      ///static
@@ -58,11 +56,9 @@ class DuellKit
 	public var screenHeight(default, null): Float;
 
 	/// time
-    public var mainTimer(default, null): DuellTimer;
-    public var frameDelta(default, null): Float;
-	public var frameStartTime(default, null): Float;
-    inline static private var frameDeltaMax: Float = 1.0/15.0;
-    inline static private var frameDeltaMin: Float = 1.0/60.0;
+    public var mainTimer(default, null): Timer;
+    public var frameDelta(get, null): Float;
+	public var frameStartTime(get, null): Float;
 
 	/// assets
 	public var staticAssetList(default, null) : Array<String> = StaticAssetList.list;
@@ -72,7 +68,9 @@ class DuellKit
 
 	private function new(): Void
 	{
-        mainTimer = new DuellTimer(1);
+        mainTimer = new Timer(1);
+        mainTimer.frameDeltaMax = 1.0/60.0;
+        mainTimer.frameDeltaMin = 1.0/15.0;
 
         onError.add(function (e) {
 
@@ -87,7 +85,6 @@ class DuellKit
 		return kitInstance;
 	}
 
-
     public static var callbackAfterInitializing: Void -> Void;
 	public static function initialize(finishedCallback: Void -> Void): Void
 	{
@@ -101,9 +98,6 @@ class DuellKit
 			kitInstance.screenWidth = Graphics.instance().mainContextWidth;
 			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
 	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performOnScreenSizeChanged);
-
-            kitInstance.frameDelta = 0.0;
-			kitInstance.frameStartTime = Timer.stamp();
 	    	Graphics.instance().onRender.add(kitInstance.performOnRender);
 
 	    	kitInstance.initTheOtherSystems();
@@ -186,10 +180,17 @@ class DuellKit
 		#end /// touch
 
 		/// finalize with calling the duell kit finished initializing
-		taskArray.push(callbackAfterInitializing);
+		taskArray.push(initializeFinished);
 
 		/// just runs the first one
 		runAnotherInit();
+	}
+
+	private function initializeFinished()
+	{
+		mainTimer.start();
+		callbackAfterInitializing();
+		callbackAfterInitializing = null;
 	}
 
 	private function performOnScreenSizeChanged(): Void
@@ -212,13 +213,11 @@ class DuellKit
 	{
 		try
 		{
-            calculateDeltaTime();
-
             // Input Processing in here
             onEnterFrame.dispatch();
 
-            // Tick main timer for update
-            mainTimer.tick(frameDelta);
+            // Mainloop, runs the timers, delays and async executions
+            mainLoop.loopMainLoop();
 
             // Rendering
             Graphics.instance().clearAllBuffers();
@@ -226,25 +225,12 @@ class DuellKit
 			Graphics.instance().present();
 
             onExitFrame.dispatch();
-
-            // Mainloop
-            mainLoop.loopMainLoop();
 		}
 		catch(e : Dynamic)
 		{
 			onError.dispatch(e);
 		}
 	}
-
-    private function calculateDeltaTime(): Void
-    {
-        var newCurrentTime = Timer.stamp();
-        frameDelta = newCurrentTime - frameStartTime;
-        frameStartTime = newCurrentTime;
-
-        frameDelta = Math.min(frameDelta, frameDeltaMax);
-        frameDelta = Math.max(frameDelta, frameDeltaMin);
-    }
 
 	private function performOnMouseMovementEvent(event: MouseMovementEventData): Void
 	{
@@ -300,6 +286,16 @@ class DuellKit
 		#else
 		    return null;
 		#end
+    }
+
+    private function get_frameDelta(): Float
+    {
+    	return mainTimer.frameDelta;
+    }
+
+    private function get_frameStartTime(): Float
+    {
+    	return mainTimer.frameStartTime;
     }
 }
 
