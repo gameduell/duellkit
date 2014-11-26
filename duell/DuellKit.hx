@@ -62,6 +62,7 @@ class DuellKit
     public var mainTimer(default, null): Timer;
     public var frameDelta(get, null): Float;
 	public var frameStartTime(get, null): Float;
+	public var time(get, null): Float; 
 
 	/// assets
 	public var staticAssetList(default, null) : Array<String> = StaticAssetList.list;
@@ -299,6 +300,11 @@ class DuellKit
     private function get_frameStartTime(): Float
     {
     	return mainTimer.frameStartTime;
+    }
+
+    private function get_time(): Float
+    {
+    	return mainTimer.time;
     }
 }
 
