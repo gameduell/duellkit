@@ -29,8 +29,8 @@ import input.TouchManager;
 
 class DuellKit
 {
-	private static inline var INITIAL_TIMER_FRAME_MAX_DELTA = 1.0/60.0;
-	private static inline var INITIAL_TIMER_FRAME_MIN_DELTA = 1.0/15.0;
+	private static inline var INITIAL_TIMER_FRAME_MAX_DELTA = 1.0/15.0;
+	private static inline var INITIAL_TIMER_FRAME_MIN_DELTA = 1.0/60.0;
 
      ///static
     #if flash
