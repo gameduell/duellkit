@@ -29,6 +29,9 @@ import input.TouchManager;
 
 class DuellKit
 {
+	private static inline var INITIAL_TIMER_FRAME_MAX_DELTA = 1.0/60.0;
+	private static inline var INITIAL_TIMER_FRAME_MIN_DELTA = 1.0/15.0;
+
      ///static
     #if flash
         static var tf : flash.text.TextField = null;
@@ -69,8 +72,8 @@ class DuellKit
 	private function new(): Void
 	{
         mainTimer = new Timer(1);
-        mainTimer.frameDeltaMax = 1.0/60.0;
-        mainTimer.frameDeltaMin = 1.0/15.0;
+        mainTimer.frameDeltaMax = INITIAL_TIMER_FRAME_MAX_DELTA;
+        mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;
 
         onError.add(function (e) {
 
