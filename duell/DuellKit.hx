@@ -102,7 +102,7 @@ class DuellKit
 			kitInstance.screenWidth = Graphics.instance().mainContextWidth;
 			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
 	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performOnScreenSizeChanged);
-	    	Graphics.instance().onRender.add(kitInstance.performOnRender);
+	    	Graphics.instance().onRender.add(kitInstance.performPreInitializeOnRender);
 
 	    	kitInstance.initTheOtherSystems();
 	    });
@@ -194,6 +194,9 @@ class DuellKit
 	{
 		mainTimer.start();
 		callbackAfterInitializing();
+
+	    Graphics.instance().onRender.remove(kitInstance.performPreInitializeOnRender);
+	    Graphics.instance().onRender.add(kitInstance.performOnRender);
 		callbackAfterInitializing = null;
 	}
 
@@ -205,6 +208,19 @@ class DuellKit
 			screenHeight = Graphics.instance().mainContextHeight;
 
 			onScreenSizeChanged.dispatch();
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
+	}
+
+	private function performPreInitializeOnRender(): Void
+	{
+		try
+		{
+            // Mainloop, runs the timers, delays and async executions
+            mainLoop.loopMainLoop();
 		}
 		catch(e : Dynamic)
 		{
