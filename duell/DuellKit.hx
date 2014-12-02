@@ -1,5 +1,6 @@
 package duell;
 
+import input.KeyboardEventData;
 import msignal.Signal;
 
 import graphics.Graphics;
@@ -19,7 +20,9 @@ import input.MouseButtonState;
 import input.MouseButtonEventData;
 import input.MouseMovementEventData;
 
+
 #if (html5 || flash)
+import input.KeyboardManager;
 import input.MouseManager;
 #end
 
@@ -48,6 +51,9 @@ class DuellKit
 	public var onMouseMovementEvent(default, null): Signal1<MouseMovementEventData> = new Signal1();
 	public var mouseState(get, null): Map<MouseButton, MouseButtonState>;
 	public var mousePosition(get, null): Vector2;
+
+	public var onKeyboardEvent(default, null): Signal1<KeyboardEventData> = new Signal1();
+
 
 	//public var onMemoryWarning(default, null): Signal0 = new Signal0();
 
@@ -183,6 +189,19 @@ class DuellKit
 
 		#end /// touch
 
+
+		/// KEYBOARD
+		#if (flash || html5)
+		taskArray.push(function() KeyboardManager.initialize(runAnotherInit));
+
+		taskArray.push(function()
+		{
+			KeyboardManager.instance().getMainKeyboard().onKeyboardEvent.add(performOnKeyboardEvent);
+			runAnotherInit();
+		});
+
+		#end /// keyboard
+
 		/// finalize with calling the duell kit finished initializing
 		taskArray.push(initializeFinished);
 
@@ -287,6 +306,18 @@ class DuellKit
 			onError.dispatch(e);
 		}
 
+	}
+
+	private function performOnKeyboardEvent(event: KeyboardEventData): Void
+	{
+		try
+		{
+			onKeyboardEvent.dispatch(event);
+		}
+		catch(e : Dynamic)
+		{
+			onError.dispatch(e);
+		}
 	}
 
 	public function get_mousePosition(): Vector2
