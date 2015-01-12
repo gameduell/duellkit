@@ -30,6 +30,11 @@ import input.MouseManager;
 import input.TouchManager;
 #end
 
+#if android
+@:headerCode("
+	#include <android/log.h>
+")
+#end
 class DuellKit
 {
 	private static inline var INITIAL_TIMER_FRAME_MAX_DELTA = 1.0/15.0;
@@ -85,7 +90,13 @@ class DuellKit
         onError.add(function (e) {
 
 	        if(onError.numListeners == 1) /// only this
+	        {
+	        	print("Error: " + e);
+	        	print("Stacktrace:");
+	        	print(haxe.CallStack.exceptionStack().join("\n"));
+	        	print("===========");
 	            throw e;
+	        }
 
         });
     }
@@ -113,6 +124,19 @@ class DuellKit
 	    	kitInstance.initTheOtherSystems();
 	    });
 	}
+
+	#if android
+    @:functionCode("
+		if (((v == null()))){
+			__android_log_print(ANDROID_LOG_INFO, HX_CSTRING(\"duell\"), HX_CSTRING(\"\"));
+		}
+		else{
+			__android_log_print(ANDROID_LOG_INFO, HX_CSTRING(\"duell\"), v->toString());
+		}
+		return null();
+    ") 
+    static public function print(v: Dynamic,  ?pos: haxe.PosInfos = null){}
+    #else
     static public dynamic function print(v: Dynamic,  ?pos: haxe.PosInfos = null) untyped
     {
         #if flash
@@ -148,6 +172,7 @@ class DuellKit
 			untyped __java__("java.lang.System.out.print(str)");
 		#end
     }
+    #end ///not android
 
 	private function initTheOtherSystems(): Void
 	{
