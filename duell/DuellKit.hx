@@ -106,7 +106,7 @@ class DuellKit
 		return kitInstance;
 	}
 
-    public static var callbackAfterInitializing: Void -> Void;
+    private static var callbackAfterInitializing: Void -> Void;
 	public static function initialize(finishedCallback: Void -> Void): Void
 	{
         callbackAfterInitializing = finishedCallback;
