@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <library>
+	
+	<supported-haxe-version version="3.1.0+" />
+    <supported-duell-tool version="1.0.0+" />
+    <supported-build-plugin name="android" version="1.0.0+" />
+    <supported-build-plugin name="ios" version="1.0.0+" />
+    <supported-build-plugin name="flash" version="1.0.0+" />
+    <supported-build-plugin name="html5" version="1.0.0+" />
 
-	<haxelib name="msignal" />
+	<haxelib name="msignal" version="1.2.2" />
 
 	<duelllib name="types" version="2.0.0+" />
 	<duelllib name="graphics" version="1.0.0+" />
