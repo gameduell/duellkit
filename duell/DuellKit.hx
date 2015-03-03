@@ -59,7 +59,6 @@ class DuellKit
 
 	public var onKeyboardEvent(default, null): Signal1<KeyboardEventData> = new Signal1();
 
-
 	//public var onMemoryWarning(default, null): Signal0 = new Signal0();
 
     public var onError(default, null): Signal1<Dynamic> = new Signal1();
@@ -75,17 +74,20 @@ class DuellKit
 	public var frameStartTime(get, null): Float;
 	public var time(get, null): Float; 
 
+	/// runloop
+	public var loopTheMainLoopOnRender: Bool = true;
+	public var mainLoop : MainRunLoop = RunLoop.getMainLoop();
+
 	/// assets
 	public var staticAssetList(default, null) : Array<String> = StaticAssetList.list;
 
 	static private var kitInstance : DuellKit;
-	private var mainLoop : MainRunLoop = RunLoop.getMainLoop();
 
 	private function new(): Void
 	{
         mainTimer = new Timer(1);
         mainTimer.frameDeltaMax = INITIAL_TIMER_FRAME_MAX_DELTA;
-        mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;
+        mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;        
 
         onError.add(function (e) {
 
@@ -264,7 +266,7 @@ class DuellKit
 		try
 		{
             // Mainloop, runs the timers, delays and async executions
-            mainLoop.loopMainLoop();
+            mainLoop.loopOnce();
 		}
 		catch(e : Dynamic)
 		{
@@ -280,8 +282,11 @@ class DuellKit
             // Input Processing in here
             onEnterFrame.dispatch();
 
-            // Mainloop, runs the timers, delays and async executions
-            mainLoop.loopMainLoop();
+            if (loopTheMainLoopOnRender)
+            {
+	            // Mainloop, runs the timers, delays and async executions
+	            mainLoop.loopOnce(1.0 / 60.0);
+            }
 
             // Rendering
             Graphics.instance().clearAllBuffers();
@@ -345,7 +350,7 @@ class DuellKit
 		}
 	}
 
-	public function get_mousePosition(): Vector2
+	private function get_mousePosition(): Vector2
 	{
 		#if (html5 || flash)
 			return MouseManager.instance().getMainMouse().screenPosition;
@@ -355,7 +360,7 @@ class DuellKit
     }
 
 
-	public function get_mouseState(): Map<MouseButton, MouseButtonState>
+	private function get_mouseState(): Map<MouseButton, MouseButtonState>
 	{
 		#if (html5 || flash)
 			return MouseManager.instance().getMainMouse().state;
