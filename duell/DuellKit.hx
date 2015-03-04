@@ -266,7 +266,7 @@ class DuellKit
 		try
 		{
             // Mainloop, runs the timers, delays and async executions
-            mainLoop.loopOnce();
+            mainLoop.loopMainLoop();
 		}
 		catch(e : Dynamic)
 		{
@@ -285,7 +285,7 @@ class DuellKit
             if (loopTheMainLoopOnRender)
             {
 	            // Mainloop, runs the timers, delays and async executions
-	            mainLoop.loopOnce(1.0 / 60.0);
+	            mainLoop.loopMainLoop();
             }
 
             // Rendering
