@@ -93,10 +93,10 @@ class DuellKit
 
 	        if(onError.numListeners == 1) /// only this
 	        {
-	        	print("Error: " + e);
-	        	print("Stacktrace:");
+	        	print("Error: " + e + "\n");
+	        	print("Stacktrace:" + "\n");
 	        	print(haxe.CallStack.exceptionStack().join("\n"));
-	        	print("===========");
+	        	print("===========" + "\n");
 	            throw e;
 	        }
 
