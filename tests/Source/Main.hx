@@ -9,6 +9,10 @@ class Main
 
 	static function afterInitialize()
 	{
-		trace("Rock");
+		trace("Start after initialize");
+
+        DuellKit.instance().onApplicationWillEnterBackground.add(function(){trace("DuellKit - Application Will Enter Background");});
+        DuellKit.instance().onApplicationWillEnterForeground.add(function(){trace("DuellKit - Application Will Enter Foreground");});
+        DuellKit.instance().onApplicationWillTerminate.add(function(){trace("DuellKit - Application Will Terminate");});
 	}
 }

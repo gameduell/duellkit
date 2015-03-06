@@ -1,5 +1,22 @@
+/*
+ * Copyright (c) 2003-2015 GameDuell GmbH, All Rights Reserved
+ * This document is strictly confidential and sole property of GameDuell GmbH, Berlin, Germany
+ */
+
 package duell;
 
+#if ios
+import ios_appdelegate.IOSAppDelegate;
+#end
+#if android
+import android_appdelegate.AndroidAppDelegate;
+#end
+#if flash
+import flash_appdelegate.FlashAppDelegate;
+#end
+#if html5
+import html5_appdelegate.HTML5AppDelegate;
+#end
 import input.KeyboardEventData;
 import msignal.Signal;
 
@@ -59,7 +76,32 @@ class DuellKit
 
 	public var onKeyboardEvent(default, null): Signal1<KeyboardEventData> = new Signal1();
 
-	//public var onMemoryWarning(default, null): Signal0 = new Signal0();
+    /**
+      * Dispatched when the app is about to enter into the background.
+    **/
+    public var onApplicationWillEnterBackground(default, null): Signal0 = new Signal0();
+
+    /**
+      * Dispatched when the app is about to come back to foreground.
+    **/
+    public var onApplicationWillEnterForeground(default, null): Signal0 = new Signal0();
+
+    /**
+      * Dispatched when the app is about to terminate. Depending on the platform this might not be called at all.
+      *
+      * App Termination:
+      *
+      * Apps must be prepared for termination to happen at any time and should not wait
+      * to save user data or perform other critical tasks.
+      * System-initiated termination is a normal part of an app’s life cycle.
+      * The system usually terminates apps so that it can reclaim memory and make room for
+      * other apps being launched by the user, but the system may also terminate apps
+      * that are misbehaving or not responding to events in a timely manner.
+    **/
+    public var onApplicationWillTerminate(default, null): Signal0 = new Signal0();
+
+    // TODO implement
+   // public var onApplicationDidReceiveMemoryWarning(default, null): Signal0 = new Signal0();
 
     public var onError(default, null): Signal1<Dynamic> = new Signal1();
 
@@ -85,6 +127,8 @@ class DuellKit
 
 	private function new(): Void
 	{
+        initAppDelegate();
+
         mainTimer = new Timer(1);
         mainTimer.frameDeltaMax = INITIAL_TIMER_FRAME_MAX_DELTA;
         mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;        
@@ -101,6 +145,33 @@ class DuellKit
 	        }
 
         });
+    }
+
+    private function initAppDelegate()
+    {
+#if ios
+        IOSAppDelegate.instance().onWillResignActive.add(onApplicationWillEnterBackground.dispatch);
+        IOSAppDelegate.instance().onWillEnterForeground.add(onApplicationWillEnterForeground.dispatch);
+        IOSAppDelegate.instance().onWillTerminate.add(onApplicationWillTerminate.dispatch);
+#end
+
+#if android
+        AndroidAppDelegate.instance().onPause.add(onApplicationWillEnterBackground.dispatch);
+        AndroidAppDelegate.instance().onResume.add(onApplicationWillEnterForeground.dispatch);
+        AndroidAppDelegate.instance().onDestroy.add(onApplicationWillTerminate.dispatch);
+#end
+
+#if flash
+        FlashAppDelegate.instance().onDeactivate.add(function(event: Dynamic){onApplicationWillEnterBackground.dispatch();});
+        FlashAppDelegate.instance().onActivate.add(function(event: Dynamic){onApplicationWillEnterForeground.dispatch();});
+        FlashAppDelegate.instance().onRemoveFromStage.add(function(event: Dynamic){onApplicationWillTerminate.dispatch();});
+#end
+
+#if html5
+        HTML5AppDelegate.instance().onBlur.add(onApplicationWillEnterBackground.dispatch);
+        HTML5AppDelegate.instance().onFocus.add(onApplicationWillEnterForeground.dispatch);
+        HTML5AppDelegate.instance().onUnload.add(onApplicationWillTerminate.dispatch);
+#end
     }
 
 	static public inline function instance(): DuellKit
