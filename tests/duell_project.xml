@@ -6,6 +6,6 @@
 
 	<source path="source" />
 
-	<duelllib name="duellkit" version="1.0.0+" />
+	<duelllib name="duellkit" version="master" />
 
 </project>
