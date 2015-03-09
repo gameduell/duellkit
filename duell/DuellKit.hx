@@ -162,9 +162,9 @@ class DuellKit
 #end
 
 #if flash
-        FlashAppDelegate.instance().onDeactivate.add(function(event: Dynamic){onApplicationWillEnterBackground.dispatch();});
-        FlashAppDelegate.instance().onActivate.add(function(event: Dynamic){onApplicationWillEnterForeground.dispatch();});
-        FlashAppDelegate.instance().onRemoveFromStage.add(function(event: Dynamic){onApplicationWillTerminate.dispatch();});
+        FlashAppDelegate.instance().onDeactivate.add(onApplicationWillEnterBackground.dispatch);
+        FlashAppDelegate.instance().onActivate.add(onApplicationWillEnterForeground.dispatch);
+        FlashAppDelegate.instance().onRemoveFromStage.add(onApplicationWillTerminate.dispatch);
 #end
 
 #if html5
