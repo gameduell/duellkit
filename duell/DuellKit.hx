@@ -31,6 +31,7 @@ import filesystem.StaticAssetList;
 
 import types.Vector2;
 
+import input.VirtualInputManager;
 import input.Touch;
 import input.MouseButton;
 import input.MouseButtonState;
@@ -299,6 +300,12 @@ class DuellKit
 		});
 
 		#end /// keyboard
+
+
+        /// VIRTUAL INPUT
+        taskArray.push(function() VirtualInputManager.initialize(runAnotherInit));
+
+
 
 		/// finalize with calling the duell kit finished initializing
 		taskArray.push(initializeFinished);
