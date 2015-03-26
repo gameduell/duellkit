@@ -26,6 +26,8 @@ import runloop.RunLoop;
 import runloop.MainRunLoop;
 import runloop.Timer;
 
+import logger.Logger;
+
 import filesystem.FileSystem;
 import filesystem.StaticAssetList;
 
@@ -48,20 +50,10 @@ import input.MouseManager;
 import input.TouchManager;
 #end
 
-#if android
-@:headerCode("
-	#include <android/log.h>
-")
-#end
 class DuellKit
 {
 	private static inline var INITIAL_TIMER_FRAME_MAX_DELTA = 1.0/15.0;
 	private static inline var INITIAL_TIMER_FRAME_MIN_DELTA = 1.0/60.0;
-
-     ///static
-    #if flash
-        static var tf : flash.text.TextField = null;
-    #end
 
     /// callbacks
     public var onEnterFrame(default, null): Signal0 = new Signal0();
@@ -138,10 +130,10 @@ class DuellKit
 
 	        if(onError.numListeners == 1) /// only this
 	        {
-	        	print("Error: " + e + "\n");
-	        	print("Stacktrace:" + "\n");
-	        	print(haxe.CallStack.exceptionStack().join("\n"));
-	        	print("===========" + "\n");
+	        	Logger.print("Error: " + e + "\n");
+                Logger.print("Stacktrace:" + "\n");
+                Logger.print(haxe.CallStack.exceptionStack().join("\n"));
+                Logger.print("===========" + "\n");
 	            throw e;
 	        }
 
@@ -199,54 +191,11 @@ class DuellKit
 	    });
 	}
 
-	#if android
-    @:functionCode("
-		if (((v == null()))){
-			__android_log_print(ANDROID_LOG_INFO, HX_CSTRING(\"duell\"), HX_CSTRING(\"\"));
-		}
-		else{
-			__android_log_print(ANDROID_LOG_INFO, HX_CSTRING(\"duell\"), v->toString());
-		}
-		return null();
-    ") 
-    static public function print(v: Dynamic,  ?pos: haxe.PosInfos = null){}
-    #else
-    static public dynamic function print(v: Dynamic,  ?pos: haxe.PosInfos = null) untyped
+    @:deprecated('Use logger.Logger.print() instead from the duelllib "Logger"')
+    public static function print(v: Dynamic, ?pos: haxe.PosInfos)
     {
-        #if flash
-            tf = flash.Boot.getTrace();
-			var s = flash.Boot.__string_rec(v,"");
-			tf.text +=s;
-		#elseif neko
-			__dollar__print(v);
-		#elseif php
-			php.Lib.print(v);
-		#elseif cpp
-			cpp.Lib.print(v);
-		#elseif js
-			var msg = js.Boot.__string_rec(v,"");
-			var d;
-            if( __js__("typeof")(document) != "undefined"
-                    && (d = document.getElementById("haxe:trace")) != null ) {
-                msg = msg.split("\n").join("<br/>");
-                d.innerHTML += StringTools.htmlEscape(msg)+"<br/>";
-            }
-			else if (  __js__("typeof process") != "undefined"
-					&& __js__("process").stdout != null
-					&& __js__("process").stdout.write != null)
-				__js__("process").stdout.write(msg); // node
-			else if (  __js__("typeof console") != "undefined"
-					&& __js__("console").log != null )
-				__js__("console").log(msg); // document-less js (which may include a line break)
-
-		#elseif cs
-			cs.system.Console.Write(v);
-		#elseif java
-			var str:String = v;
-			untyped __java__("java.lang.System.out.print(str)");
-		#end
+        Logger.print(v, pos);
     }
-    #end ///not android
 
 	private function initTheOtherSystems(): Void
 	{
