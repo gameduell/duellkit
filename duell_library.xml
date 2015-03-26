@@ -17,7 +17,7 @@
     <duelllib name="filesystem" version="2.0.0+" />
 
     <duelllib name="ios_appdelegate" version="1.1.2+" if="ios" />
-	<duelllib name="android_appdelegate" version="1.0.0+" if="android" />
+	<duelllib name="android_appdelegate" version="2.0.0+" if="android" />
     <duelllib name="flash_appdelegate" version="1.3.0+" if="flash" />
     <duelllib name="html5_appdelegate" version="1.1.0+" if="html5" />
 
