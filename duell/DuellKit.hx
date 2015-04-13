@@ -113,6 +113,9 @@ class DuellKit
 	public var loopTheMainLoopOnRender: Bool = true;
 	public var mainLoop : MainRunLoop = RunLoop.getMainLoop();
 
+	/// graphics
+	public var clearAndPresentDefaultBuffer: Bool = true;
+
 	/// assets
 	public var staticAssetList(default, null) : Array<String> = StaticAssetList.list;
 
@@ -316,9 +319,17 @@ class DuellKit
             }
 
             // Rendering
-            Graphics.instance().clearAllBuffers();
+			if (clearAndPresentDefaultBuffer)
+			{
+				Graphics.instance().clearAllBuffers();
+			}
+
 			onRender.dispatch();
-			Graphics.instance().present();
+
+			if (clearAndPresentDefaultBuffer)
+			{
+				Graphics.instance().present();
+			}
 
             onExitFrame.dispatch();
 		}
