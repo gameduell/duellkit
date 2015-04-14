@@ -11,7 +11,7 @@
 	<haxelib name="msignal" version="1.2.2" />
 
 	<duelllib name="types" version="2.0.0+" />
-	<duelllib name="graphics" version="2.0.0+" />
+	<duelllib name="graphics" version="3.0.0+" />
 	<duelllib name="runloop" version="1.0.0+" />
 	<duelllib name="input" version="3.0.0+" />
     <duelllib name="filesystem" version="2.0.0+" />
