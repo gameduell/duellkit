@@ -10,7 +10,7 @@
 	<haxelib name="msignal" version="1.2.2" />
 
 	<duelllib name="types" version="3.0.0+" />
-	<duelllib name="graphics" version="4.0.0+" />
+	<duelllib name="opengl" version="4.0.0+" unless="flash" />
 	<duelllib name="runloop" version="2.0.0+" />
 	<duelllib name="input" version="4.0.0+" />
     <duelllib name="filesystem" version="4.0.0+" />

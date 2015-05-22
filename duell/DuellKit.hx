@@ -20,7 +20,18 @@ import html5_appdelegate.HTML5AppDelegate;
 import input.KeyboardEventData;
 import msignal.Signal;
 
-import graphics.Graphics;
+#if (html5 || ios || android)
+import gl.GLContext;
+#else
+import flash.display3D.Context3DClearMask;
+import flash.errors.Error;
+import flash.events.ErrorEvent;
+import flash.events.Event;
+import flash.display.Stage3D;
+import flash.display.Stage;
+import flash.display.StageScaleMode;
+import flash.display.StageAlign;
+#end
 
 import runloop.RunLoop;
 import runloop.MainRunLoop;
@@ -107,7 +118,7 @@ class DuellKit
     public var mainTimer(default, null): Timer;
     public var frameDelta(get, null): Float;
 	public var frameStartTime(get, null): Float;
-	public var time(get, null): Float; 
+	public var time(get, null): Float;
 
 	/// runloop
 	public var loopTheMainLoopOnRender: Bool = true;
@@ -127,7 +138,7 @@ class DuellKit
 
         mainTimer = new Timer(1);
         mainTimer.frameDeltaMax = INITIAL_TIMER_FRAME_MAX_DELTA;
-        mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;        
+        mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;
 
         onError.add(function (e) {
 
@@ -182,16 +193,63 @@ class DuellKit
 
 		kitInstance = new DuellKit();
 
-		/// TODO REFACTOR WITH TASKS
-	    Graphics.initialize(function () {
+		#if (html5 || ios || android)
 
-			kitInstance.screenWidth = Graphics.instance().mainContextWidth;
-			kitInstance.screenHeight = Graphics.instance().mainContextHeight;
-	    	Graphics.instance().onMainContextSizeChanged.add(kitInstance.performOnScreenSizeChanged);
-	    	Graphics.instance().onRender.add(kitInstance.performPreInitializeOnRender);
+		GLContext.setupMainContext(function () {
+
+			kitInstance.screenWidth = GLContext.getMainContext().contextWidth;
+			kitInstance.screenHeight = GLContext.getMainContext().contextHeight;
+	    	GLContext.getMainContext().onContextSizeChanged.add(kitInstance.performOnScreenSizeChanged);
+	    	GLContext.onRenderOnMainContext.add(kitInstance.performPreInitializeOnRender);
 
 	    	kitInstance.initTheOtherSystems();
+		});
+
+		#else /// flash
+
+		var stage:Stage = flash.Lib.current.stage;
+		var stage3D : Stage3D = stage.stage3Ds[0];
+
+		stage.align = StageAlign.TOP_LEFT;
+		stage.scaleMode = StageScaleMode.NO_SCALE;
+		stage.frameRate = 60;
+
+		var onErrorFunction =  function(event: Event) kitInstance.onError.dispatch(event);
+		var onContext3DCreateFunction = function (event: Event)
+	    {
+	        var stage:Stage = flash.Lib.current.stage;
+	        var stage3D : Stage3D = stage.stage3Ds[0];
+	        stage3D.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+
+			kitInstance.screenWidth = stage.stageWidth;
+			kitInstance.screenHeight = stage.stageHeight;
+
+	        flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, kitInstance.performPreInitializeOnRenderFlash);
+
+	    	kitInstance.initTheOtherSystems();
+	    };
+
+		stage3D.addEventListener( ErrorEvent.ERROR, onErrorFunction);
+
+		stage3D.addEventListener(Event.CONTEXT3D_CREATE, onContext3DCreateFunction);
+
+		stage.addEventListener(Event.RESIZE, kitInstance.performOnScreenSizeChangedFlash);
+
+		flash.Lib.current.addEventListener(Event.REMOVED_FROM_STAGE, function (event: Event)
+	    {
+	        var stage:Stage = flash.Lib.current.stage;
+	        var stage3D : Stage3D = stage.stage3Ds[0];
+
+	        stage3D.removeEventListener( ErrorEvent.ERROR, onErrorFunction);
+
+	        stage3D.removeEventListener(Event.CONTEXT3D_CREATE, onContext3DCreateFunction);
+
+	        stage.removeEventListener(Event.RESIZE, kitInstance.performOnScreenSizeChangedFlash);
 	    });
+
+		stage3D.requestContext3D(flash.display3D.Context3DRenderMode.AUTO);
+
+		#end
 	}
 
     @:deprecated('Use logger.Logger.print() instead from the duelllib "Logger"')
@@ -216,7 +274,7 @@ class DuellKit
 		taskArray.push(function() FileSystem.initialize(runAnotherInit));
 
 		/// MOUSE
-		#if (flash || html5) 
+		#if (flash || html5)
 
 		taskArray.push(function() MouseManager.initialize(runAnotherInit));
 
@@ -253,11 +311,8 @@ class DuellKit
 
 		#end /// keyboard
 
-
         /// VIRTUAL INPUT
         taskArray.push(function() VirtualInputManager.initialize(runAnotherInit));
-
-
 
 		/// finalize with calling the duell kit finished initializing
 		taskArray.push(initializeFinished);
@@ -269,19 +324,39 @@ class DuellKit
 	private function initializeFinished()
 	{
 		mainTimer.start();
+
 		callbackAfterInitializing();
 
-	    Graphics.instance().onRender.remove(kitInstance.performPreInitializeOnRender);
-	    Graphics.instance().onRender.add(kitInstance.performOnRender);
+		#if flash
+	    flash.Lib.current.stage.removeEventListener(Event.ENTER_FRAME, performPreInitializeOnRenderFlash);
+		flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, performOnRenderFlash);
+		#else
+	    GLContext.onRenderOnMainContext.remove(kitInstance.performPreInitializeOnRender);
+	    GLContext.onRenderOnMainContext.add(kitInstance.performOnRender);
+		#end
+
 		callbackAfterInitializing = null;
 	}
 
+	#if flash
+	private function performOnScreenSizeChangedFlash(event: Event) performOnScreenSizeChanged();
+	#end
 	private function performOnScreenSizeChanged(): Void
 	{
 		try
 		{
-			screenWidth = Graphics.instance().mainContextWidth;
-			screenHeight = Graphics.instance().mainContextHeight;
+			#if flash
+
+			var stage:Stage = flash.Lib.current.stage;
+			screenWidth = stage.stageWidth;
+			screenHeight = stage.stageHeight;
+
+			#else
+
+			screenWidth = GLContext.getMainContext().contextWidth;
+			screenHeight = GLContext.getMainContext().contextHeight;
+
+			#end
 
 			onScreenSizeChanged.dispatch();
 		}
@@ -291,6 +366,9 @@ class DuellKit
 		}
 	}
 
+	#if flash
+	private function performPreInitializeOnRenderFlash(event: Event) performPreInitializeOnRender();
+	#end
 	private function performPreInitializeOnRender(): Void
 	{
 		try
@@ -305,10 +383,19 @@ class DuellKit
 	}
 
     // Display Sync
+
+	#if flash
+	private function performOnRenderFlash(event: Event) performOnRender();
+	#end
 	private function performOnRender(): Void
 	{
 		try
 		{
+			#if flash
+			var stage:Stage = flash.Lib.current.stage;
+			var stage3D : Stage3D = stage.stage3Ds[0];
+			#end
+
             // Input Processing in here
             onEnterFrame.dispatch();
 
@@ -321,14 +408,22 @@ class DuellKit
             // Rendering
 			if (clearAndPresentDefaultBuffer)
 			{
-				Graphics.instance().clearAllBuffers();
+				#if flash
+				stage3D.context3D.clear(1, 1, 1, 1.0, 1, 0x00, Context3DClearMask.ALL);
+				#else
+
+			    gl.GL.clear(gl.GLDefines.COLOR_BUFFER_BIT | gl.GLDefines.DEPTH_BUFFER_BIT | gl.GLDefines.STENCIL_BUFFER_BIT);
+
+				#end
 			}
 
 			onRender.dispatch();
 
 			if (clearAndPresentDefaultBuffer)
 			{
-				Graphics.instance().present();
+				#if flash
+				stage3D.context3D.present();
+				#end
 			}
 
             onExitFrame.dispatch();
@@ -422,5 +517,3 @@ class DuellKit
     	return mainTimer.time;
     }
 }
-
-
