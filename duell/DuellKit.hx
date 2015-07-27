@@ -169,7 +169,12 @@ class DuellKit
                 Logger.print("Stacktrace:" + "\n");
                 Logger.print(haxe.CallStack.exceptionStack().join("\n"));
                 Logger.print("===========" + "\n");
+
+				#if cpp
+				cpp.Lib.rethrow(e);
+				#else
 	            throw e;
+				#end
 	        }
 
         });
