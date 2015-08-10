@@ -23,6 +23,9 @@
     <duelllib name="html5_appdelegate" version="1.1.0+" if="html5" />
 
     <platform-config>
+        <android>
+            <proguard path="proguard.cfg" />
+        </android>
         <documentation>
             <documentation-folder library="duellkit" path="documentation" />
         </documentation>
