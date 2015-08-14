@@ -101,6 +101,11 @@ class DuellKit
 
 	public var onKeyboardEvent(default, null): Signal1<KeyboardEventData> = new Signal1();
 
+	/**
+	* Tells the delegate that the app is about to become inactive.
+	**/
+	public var  onAplicationWillResignActive(default, null): Signal0 = new Signal0();
+
     /**
       * Dispatched when the app is about to enter into the background.
     **/
@@ -183,9 +188,10 @@ class DuellKit
     private function initAppDelegate()
     {
 #if ios
-        IOSAppDelegate.instance().onWillResignActive.add(onApplicationWillEnterBackground.dispatch);
-        IOSAppDelegate.instance().onWillEnterForeground.add(onApplicationWillEnterForeground.dispatch);
-        IOSAppDelegate.instance().onWillTerminate.add(onApplicationWillTerminate.dispatch);
+		IOSAppDelegate.instance().onWillResignActive.add(onAplicationWillResignActive.dispatch);
+		IOSAppDelegate.instance().onWillEnterBackground.add(onApplicationWillEnterBackground.dispatch);
+		IOSAppDelegate.instance().onWillEnterForeground.add(onApplicationWillEnterForeground.dispatch);
+		IOSAppDelegate.instance().onWillTerminate.add(onApplicationWillTerminate.dispatch);
 #end
 
 #if android
