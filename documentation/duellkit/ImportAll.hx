@@ -1,2 +1,2 @@
 package duellkit;
-import duell.DuellKit;
+import duellkit.DuellKit;
