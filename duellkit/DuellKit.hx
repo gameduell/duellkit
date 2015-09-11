@@ -24,7 +24,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package duell;
+package duellkit;
 
 #if ios
 import ios_appdelegate.IOSAppDelegate;

@@ -1,8 +1,8 @@
-import duell.DuellKit;
+import duellkit.DuellKit;
 
 class Main
 {
-	static function main() : Void 
+	static function main() : Void
 	{
 		DuellKit.initialize(afterInitialize);
 	}
