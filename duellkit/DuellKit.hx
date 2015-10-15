@@ -41,7 +41,7 @@ import html5_appdelegate.HTML5AppDelegate;
 import input.KeyboardEventData;
 import msignal.Signal;
 
-#if (html5 || ios || android)
+#if (html5 || ios || tvos || android)
 import gl.GLContext;
 #else
 import flash.display3D.Context3DClearMask;
@@ -220,7 +220,7 @@ class DuellKit
 
 		kitInstance = new DuellKit();
 
-		#if (html5 || ios || android)
+		#if (html5 || ios || tvos || android)
 
 		GLContext.setupMainContext(function () {
 
