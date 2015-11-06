@@ -30,4 +30,10 @@
         </documentation>
     </platform-config>
 
+    <library-config>
+        <opengl>
+            <ios-show-splashscreen value="true" />
+        </opengl>
+    </library-config>
+
 </library>

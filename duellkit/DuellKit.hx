@@ -162,6 +162,12 @@ class DuellKit
         mainTimer.frameDeltaMax = INITIAL_TIMER_FRAME_MAX_DELTA;
         mainTimer.frameDeltaMin = INITIAL_TIMER_FRAME_MIN_DELTA;
 
+		#if ios
+		onRender.addOnceWithPriority(function() {
+			GLContext.getMainContext().removeSplashScreen();
+		});
+		#end
+
         onError.add(function (e) {
 
 	        if(onError.numListeners == 1) /// only this
