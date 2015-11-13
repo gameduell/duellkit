@@ -126,8 +126,7 @@ class DuellKit
     **/
     public var onApplicationWillTerminate(default, null): Signal0 = new Signal0();
 
-    // TODO implement
-   // public var onApplicationDidReceiveMemoryWarning(default, null): Signal0 = new Signal0();
+    public var onApplicationDidReceiveMemoryWarning(default, null): Signal0 = new Signal0();
 
     public var onError(default, null): Signal1<Dynamic> = new Signal1();
 
@@ -193,12 +192,14 @@ class DuellKit
 		IOSAppDelegate.instance().onWillEnterBackground.add(onApplicationWillEnterBackground.dispatch);
 		IOSAppDelegate.instance().onWillEnterForeground.add(onApplicationWillEnterForeground.dispatch);
 		IOSAppDelegate.instance().onWillTerminate.add(onApplicationWillTerminate.dispatch);
+        IOSAppDelegate.instance().onMemoryWarning.add(onApplicationDidReceiveMemoryWarning.dispatch);
 #end
 
 #if android
         AndroidAppDelegate.instance().onPause.add(onApplicationWillEnterBackground.dispatch);
         AndroidAppDelegate.instance().onResume.add(onApplicationWillEnterForeground.dispatch);
         AndroidAppDelegate.instance().onDestroy.add(onApplicationWillTerminate.dispatch);
+        AndroidAppDelegate.instance().onLowMemory.add(onApplicationDidReceiveMemoryWarning.dispatch);
 #end
 
 #if flash
