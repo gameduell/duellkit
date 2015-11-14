@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <library xmlns="duell">
 
-    <supported-duell-tool version="4.0.0+" /> <!--// TODO Remove flash support with next major-->
-    <supported-build-plugin name="android" version="5.0.0+" />
+    <supported-duell-tool version="4.0.0+" />
+    <supported-build-plugin name="android" version="6.0.0+" />
     <supported-build-plugin name="ios" version="4.0.0+" />
     <supported-build-plugin name="html5" version="3.0.0+" />
 
@@ -11,13 +11,13 @@
 	<duelllib name="types" version="3.0.0+" />
 	<duelllib name="opengl" version="6.0.0+" />
 	<duelllib name="runloop" version="2.0.0+" />
-	<duelllib name="input" version="5.0.0+" />
+	<duelllib name="input" version="6.0.0+" />
     <duelllib name="filesystem" version="5.0.0+" />
     <duelllib name="logger" version="1.0.0+" />
     <duelllib name="polygonal-ds" version="2.0.0+" />
 
     <duelllib name="ios_appdelegate" version="2.1.0+" if="ios" />
-	<duelllib name="android_appdelegate" version="5.0.0+" if="android" />
+	<duelllib name="android_appdelegate" version="6.0.0+" if="android" />
     <duelllib name="flash_appdelegate" version="1.3.0+" if="flash" />
     <duelllib name="html5_appdelegate" version="1.1.0+" if="html5" />
 
@@ -29,5 +29,11 @@
             <documentation-folder library="duellkit" path="documentation" />
         </documentation>
     </platform-config>
+
+    <library-config>
+        <opengl>
+            <ios-show-splashscreen value="true" />
+        </opengl>
+    </library-config>
 
 </library>
