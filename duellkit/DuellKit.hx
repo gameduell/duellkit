@@ -213,6 +213,20 @@ class DuellKit
 		return kitInstance;
 	}
 
+	///OPEN URL
+	public function openUrl(url: String): Bool
+	{
+		#if ios
+		return IOSAppDelegate.instance().openURL(url);
+		#elseif android
+		return AndroidAppDelegate.instance().openURL(url);
+		#elseif html5
+		return HTML5AppDelegate.instance().openURL(url);
+		#else
+		return false;
+		#end
+	}
+
     private static var callbackAfterInitializing: Void -> Void;
 	public static function initialize(finishedCallback: Void -> Void): Void
 	{
