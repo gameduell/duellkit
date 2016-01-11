@@ -176,6 +176,8 @@ class DuellKit
                 Logger.print(haxe.CallStack.exceptionStack().join("\n"));
                 Logger.print("===========" + "\n");
 
+				Logger.flush();
+
 				#if cpp
 				cpp.Lib.rethrow(e);
 				#else
@@ -298,13 +300,7 @@ class DuellKit
 
 		#end
 	}
-
-    @:deprecated('Use logger.Logger.print() instead from the duelllib "Logger"')
-    public static function print(v: Dynamic, ?pos: haxe.PosInfos)
-    {
-        Logger.print(v, pos);
-    }
-
+	
 	private function initTheOtherSystems(): Void
 	{
 		var taskArray : Array<Void->Void> = [];
@@ -316,6 +312,16 @@ class DuellKit
 				RunLoop.getMainLoop().queue(taskArray.shift(), PriorityASAP);
 			}
 		}
+
+		/// LOGGER
+		taskArray.push(function() {
+			Logger.initialize(function() {
+
+				onApplicationWillTerminate.add(function() Logger.flush());
+				onApplicationWillEnterBackground.add(function() Logger.flush());
+				runAnotherInit();
+			});
+		});
 
 		/// FILESYSTEM
 		taskArray.push(function() FileSystem.initialize(runAnotherInit));

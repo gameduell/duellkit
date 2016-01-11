@@ -13,7 +13,7 @@
 	<duelllib name="runloop" version="2.0.0+" />
 	<duelllib name="input" version="6.0.0+" />
     <duelllib name="filesystem" version="5.0.0+" />
-    <duelllib name="logger" version="1.0.0+" />
+    <duelllib name="logger" version="2.0.0+" />
     <duelllib name="polygonal-ds" version="2.0.0+" />
 
     <duelllib name="ios_appdelegate" version="2.4.0+" if="ios" />
