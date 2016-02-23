@@ -135,6 +135,8 @@ class DuellKit
 	public var screenWidth(default, null): Float;
 	public var screenHeight(default, null): Float;
 
+	public var screenIdleTimerDisabled(get, set): Bool;
+
 	/// time
     public var mainTimer(default, null): Timer;
     public var frameDelta(get, null): Float;
@@ -569,4 +571,26 @@ class DuellKit
     {
     	return mainTimer.time;
     }
+
+	private function set_screenIdleTimerDisabled(value: Bool): Bool
+	{
+		#if android
+		return AndroidAppDelegate.instance().screenIdleTimerDisabled = value;
+		#elseif ios
+		return IOSAppDelegate.instance().screenIdleTimerDisabled = value;
+		#else
+		return true;
+		#end
+	}
+
+	private function get_screenIdleTimerDisabled(): Bool
+	{
+		#if android
+			return AndroidAppDelegate.instance().screenIdleTimerDisabled;
+		#elseif ios
+			return IOSAppDelegate.instance().screenIdleTimerDisabled;
+		#else
+			return true;
+		#end
+	}
 }
