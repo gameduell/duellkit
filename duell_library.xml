@@ -6,7 +6,7 @@
     <supported-build-plugin name="ios" version="4.0.0+" />
     <supported-build-plugin name="html5" version="3.0.0+" />
 
-	<haxelib name="msignal" version="1.2.2" />
+	<haxelib name="msignal" version="1.2.4" />
 
 	<duelllib name="types" version="3.0.0+" />
 	<duelllib name="opengl" version="6.0.0+" />
